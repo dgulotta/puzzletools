@@ -55,6 +55,8 @@ pub fn wordlist_iter<R: Read>(r: R) -> impl Iterator<Item=WordFreq>
     CsvIter::new(rdr)
 }
 
+/// Returns an iterator that iterates over all words in the given wordlist.
+/// The iterator will panic if it fails to read or parse the file.
 pub fn load_wordlist_iter(name: &str) -> Result<impl Iterator<Item=WordFreq>>
 {
     let file = load_wordlist_file(name)?;
@@ -75,7 +77,19 @@ pub struct WordFreq {
 }
 
 impl WordFreq {
+    /// The word with spaces and punctuation removed.
+    /// ```
+    /// use puzzletools::wordlist::WordFreq;
+    /// let wf = WordFreq { word: "ASCII STRING".to_owned(), freq: 1 };
+    /// assert_eq!(wf.slug(),"ASCIISTRING");
+    /// ```
     pub fn slug(&self) -> Cow<str> { slugify(&self.word) }
+    /// The number of letters in the word (non-alphabetic characters are not counted).
+    /// ```
+    /// use puzzletools::wordlist::WordFreq;
+    /// let wf = WordFreq { word: "ASCII STRING".to_owned(), freq: 1 };
+    /// assert_eq!(wf.len(),11);
+    /// ```
     pub fn len(&self) -> usize { self.slug().len() }
 }
 

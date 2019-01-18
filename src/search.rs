@@ -2,6 +2,8 @@ use std::collections::BinaryHeap;
 use std::cmp::Ordering;
 use std::fmt::Display;
 
+/// A word (or set of words), along with how good of puzzle answer(s)
+/// they are estimated to be.
 pub trait SearchResult {
     type Data: Display;
     type Freq: Display + Ord;
@@ -10,6 +12,7 @@ pub trait SearchResult {
     fn freq(&self) -> Self::Freq;
 }
 
+/// Prints out a search result.
 pub fn print_result<S: SearchResult>(s: S) {
     println!("{}, {}", s.data(), s.freq());
 }
@@ -49,6 +52,7 @@ impl<T: SearchResult> Iterator for SortResultIter<T>
     }
 }
 
+/// Sorts a list of search results.
 pub fn sort_results<T: Iterator>(it: T) -> impl Iterator<Item = T::Item>
 where
     T::Item: SearchResult,
