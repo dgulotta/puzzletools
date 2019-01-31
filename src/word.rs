@@ -2,30 +2,38 @@ use std::borrow::Cow;
 use regex::Regex;
 
 lazy_static! {
-    static ref SLUG_RE: Regex = Regex::new("[^A-Z]").unwrap(); 
+    static ref SLUG_RE: Regex = Regex::new("[^A-Z]").unwrap();
 }
 
-/**
- * A trait for types that could be interpreted as an ASCII string.
- * Common types that implement `AsRef<str>` or `AsRef<[u8]>` should
- * also implement this.
- */
+/// A trait for types that could be interpreted as an ASCII string.
+/// Common types that implement `AsRef<str>` or `AsRef<[u8]>` should
+/// also implement this.
 pub trait Text {
-    fn text_str(&self) -> &str;
-    fn text_bytes(&self) -> &[u8] { self.text_str().as_ref() }
-    fn byte(&self, idx: usize) -> u8 { self.text_bytes()[idx] }
+    fn as_str(&self) -> &str;
+    fn as_bytes(&self) -> &[u8] { self.as_str().as_ref() }
+    fn bytes(&self) -> std::str::Bytes { self.as_str().bytes() }
+    fn chars(&self) -> std::str::Chars { self.as_str().chars() }
+    fn byte(&self, idx: usize) -> u8 { self.as_bytes()[idx] }
+    fn char(&self, idx: usize) -> char { self.byte(idx) as char }
+    fn get_byte(&self, idx: usize) -> Option<u8> {
+        self.as_bytes().get(idx).map(|&c| c)
+    }
+    fn get_char(&self, idx: usize) -> Option<char> {
+        self.get_byte(idx).map(|c| c as char)
+    }
+    fn to_byte_vec(&self) -> Vec<u8> { self.as_bytes().to_owned() }
 }
 
 macro_rules! text_impl_str {
     () => (
-        fn text_str(&self) -> &str { self.as_ref() }
+        fn as_str(&self) -> &str { self }
     )
 }
 
 macro_rules! text_impl_bytes {
     () => (
-        fn text_str(&self) -> &str { ::std::str::from_utf8(self).unwrap() }
-        fn text_bytes(&self) -> &[u8] { self }
+        fn as_str(&self) -> &str { ::std::str::from_utf8(self).unwrap() }
+        fn as_bytes(&self) -> &[u8] { self }
     )
 }
 
@@ -85,7 +93,7 @@ impl<'a> Text for &'a Vec<u8> {
 ///
 /// ```
 pub fn slugify<S: Text + ?Sized>(s: &S) -> Cow<str> {
-    SLUG_RE.replace_all(s.text_str(), "")
+    SLUG_RE.replace_all(s.as_str(), "")
 }
 
 /// Returns the number of (uppercase) letters in an ASCII string.
@@ -94,7 +102,7 @@ pub fn slugify<S: Text + ?Sized>(s: &S) -> Cow<str> {
 /// assert_eq!(slug_len("ASCII STRING"),11);
 /// ```
 pub fn slug_len<S: Text>(s: S) -> usize {
-    s.text_bytes().iter().filter(|c| c.is_ascii_alphabetic()).count()
+    s.bytes().filter(|c| c.is_ascii_alphabetic()).count()
 }
 
 /// Returns the letters of the word in sorted order, so that two words
@@ -105,7 +113,7 @@ pub fn slug_len<S: Text>(s: S) -> usize {
 /// assert_ne!(alphagram("SPOON"),alphagram("SPONN"));
 /// ```
 pub fn alphagram<S: Text>(s: S) -> String {
-    let mut copy = s.text_bytes().to_owned();
+    let mut copy = s.to_byte_vec();
     copy.sort_unstable();
     unsafe { String::from_utf8_unchecked(copy) }
 }
@@ -130,16 +138,15 @@ pub fn lett_to_num_0(c: u8) -> usize {
 pub fn ciphergram<S: Text>(s: S) -> String {
     let mut seen = [0xFFu8; 26];
     let mut count = 0u8;
-    for &c in s.text_bytes() {
+    for c in s.bytes() {
         let idx = lett_to_num_0(c);
         if (seen[idx] as i8) < 0 {
             seen[idx] = count;
             count += 1;
         }
     }
-    let v = s.text_bytes()
-        .iter()
-        .map(|&c| b'A' + seen[lett_to_num_0(c)])
+    let v = s.bytes()
+        .map(|c| b'A' + seen[lett_to_num_0(c)])
         .collect();
     unsafe { String::from_utf8_unchecked(v) }
 }
@@ -152,7 +159,7 @@ pub fn ciphergram<S: Text>(s: S) -> String {
 pub fn num_unique_letters<S: Text>(s: S) -> usize {
     let mut seen = 0u32;
     let mut count = 0;
-    for c in s.text_bytes() {
+    for c in s.bytes() {
         let p = 1u32 << (c - b'A');
         if seen & p == 0 {
             seen |= p;
@@ -173,8 +180,8 @@ where
     S: Text,
     T: Text,
 {
-    let mut it1 = s.text_bytes().iter().peekable();
-    for c2 in t.text_bytes() {
+    let mut it1 = s.bytes().peekable();
+    for c2 in t.bytes() {
         if it1.peek() == Some(&c2) {
             it1.next();
         } else {
@@ -195,7 +202,7 @@ where
 /// ```
 pub fn double_letters<S: Text>(s: S) -> String
 {
-    let v = s.text_bytes().windows(2).filter_map(|x|
+    let v = s.as_bytes().windows(2).filter_map(|x|
         if x[0] == x[1] { Some(x[0]) } else { None }).collect();
     unsafe { String::from_utf8_unchecked(v) }
 }
@@ -211,7 +218,7 @@ pub fn repeated_bigrams<S: Text>(s: S) -> Vec<[u8; 2]>
 {
     let mut seen = [false; 676];
     let mut repeated = Vec::new();
-    for b in s.text_bytes().windows(2) {
+    for b in s.as_bytes().windows(2) {
         let idx = 26 * lett_to_num_0(b[0]) + lett_to_num_0(b[1]);
         if seen[idx] {
             repeated.push([b[0], b[1]]);
@@ -219,6 +226,84 @@ pub fn repeated_bigrams<S: Text>(s: S) -> Vec<[u8; 2]>
         seen[idx] = true;
     }
     repeated
+}
+
+/// If there is a single block of letters in `s` satisfying
+/// the predicate `pred`, returns the location of that block.
+/// Otherwise returns None.
+/// ```
+/// use std::ops::Range;
+/// use puzzletools::word::{is_roman_numeral_letter, special_letter_block};
+/// assert_eq!(special_letter_block("ARXIV", is_roman_numeral_letter), Some(2..5));
+/// assert_eq!(special_letter_block("REFLEXIVE", is_roman_numeral_letter), None);
+/// assert_eq!(special_letter_block("THROUGHOUT", is_roman_numeral_letter), None);
+/// ```
+pub fn special_letter_block<S: Text, F: FnMut(u8) -> bool>(s: S, mut pred: F) -> Option<std::ops::Range<usize>>
+{
+    let mut start = None;
+    let mut end = None;
+    for (n, c) in s.bytes().enumerate() {
+        if pred(c) {
+            if start.is_none() {
+                start = Some(n);
+            }
+            else if end.is_some() {
+                return None;
+            }
+        }
+        else if start.is_some() && end.is_none() {
+            end = Some(n);
+        }
+    }
+    if let Some(st) = start {
+        let en = end.unwrap_or(s.as_bytes().len());
+        Some(st..en)
+    }
+    else { None }
+}
+
+pub fn is_dna_letter(c: u8) -> bool {
+    match c {
+        b'A' | b'C' | b'T' | b'G' => true,
+        _ => false
+    }
+}
+
+pub fn is_rna_letter(c: u8) -> bool {
+    match c {
+        b'A' | b'C' | b'U' | b'G' => true,
+        _ => false
+    }
+}
+
+/// Returns `true` if the character is a vowel, including Y.
+pub fn is_vowel_y(c: u8) -> bool {
+    match c {
+        b'A' | b'E' | b'I' | b'O' | b'U' | b'Y' => true,
+        _ => false
+    }
+}
+
+/// Retuns `true` if the character is a vowel, not including Y.
+pub fn is_vowel_no_y(c: u8) -> bool {
+    match c {
+        b'A' | b'E' | b'I' | b'O' | b'U' => true,
+        _ => false
+    }
+}
+
+pub fn is_news_letter(c: u8) -> bool {
+    match c {
+        b'E' | b'N' | b'S' | b'W' => true,
+        _ => false
+    }
+}
+
+pub fn is_roman_numeral_letter(c: u8) -> bool {
+    match c {
+        b'I' | b'V' | b'X' | b'L' | b'C' | b'D' | b'M' => true,
+        _ => false
+    }
 }
 
 #[test]

@@ -1,4 +1,1 @@
 language: rust
-script:
-  - cargo check --examples
-  - cargo test --verbose

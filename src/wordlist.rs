@@ -8,7 +8,7 @@ use std::fs::File;
 use std::path::PathBuf;
 use search::SearchResult;
 use error::Result;
-use word::Text;
+use word::{Text, slug_len};
 
 pub fn load_wordlist_file(name: &str) -> Result<BufReader<File>>
 {
@@ -90,7 +90,7 @@ impl WordFreq {
     /// let wf = WordFreq { word: "ASCII STRING".to_owned(), freq: 1 };
     /// assert_eq!(wf.len(),11);
     /// ```
-    pub fn len(&self) -> usize { self.slug().len() }
+    pub fn len(&self) -> usize { slug_len(&self.word) }
 }
 
 impl SearchResult for WordFreq {
@@ -167,14 +167,14 @@ pub struct Wordlist {
 impl Wordlist {
     pub fn get<S: Text>(&self, s: S) -> Option<&WordlistEntry>
     {
-        self.lookup.get(s.text_bytes()).map(
+        self.lookup.get(s.as_bytes()).map(
             |&n| &self.entries[n as usize],
         )
     }
 
     pub fn freq<S: Text>(&self, s: S) -> u64
     {
-        self.lookup.get(s.text_bytes()).map_or(0, |&n| {
+        self.lookup.get(s.as_bytes()).map_or(0, |&n| {
             self.entries[n as usize].freq
         })
     }
@@ -240,6 +240,6 @@ where
     W: Text,
 {
     list1.into_iter().filter_map(move |w1| {
-        list2.get(trans(&w1).text_bytes()).map(|w2| (w1,w2))
+        list2.get(trans(&w1).as_bytes()).map(|w2| (w1,w2))
     })
 }

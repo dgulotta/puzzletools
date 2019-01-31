@@ -7,7 +7,7 @@ use puzzletools::wordlist::load_wordlist_iter;
 fn binary<S: Text>(v: S) -> Option<u8>
 {
     let mut ans: u64 = 0;
-    for c in v.text_bytes() {
+    for c in v.bytes() {
         match c {
             b'O' => ans <<= 1,
             b'I' => { ans <<= 1; ans += 1; }
@@ -25,6 +25,8 @@ fn binary<S: Text>(v: S) -> Option<u8>
 fn main() {
     let it = load_wordlist_iter("combined.freq.txt").unwrap();
     it.filter(|w| {
-        binary(w.slug()) == Some(b'W')
+        let s = w.slug();
+        binary(&s) == Some(b'W') &&
+            s.get_byte(5) == Some(b'I')
     }).take(50).for_each(print_result);
 }
