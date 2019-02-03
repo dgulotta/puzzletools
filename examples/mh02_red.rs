@@ -7,7 +7,6 @@ use puzzletools::wordlist::load_wordlist_iter;
 fn main() {
     let it = load_wordlist_iter("combined.freq.txt").unwrap();
     it.filter(|w| {
-        let v = repeated_bigrams(w.slug());
-        v == vec![*b"PL"]
+        repeated_bigrams(w.slug()) == vec![*b"PL"]
     }).take(50).for_each(print_result);
 }

@@ -16,7 +16,7 @@ fn main() {
     it.filter(|w| {
         let s = w.slug();
         if let Some(bl) = special_letter_block(&s, is_xvi) {
-            if &s.as_str()[bl] != "XIV" { return false; }
+            if &s[bl] != "XIV" { return false; }
             s.bytes().filter(|&w| is_news_letter(w)).eq("SEEN".bytes())
         }
         else { false }
