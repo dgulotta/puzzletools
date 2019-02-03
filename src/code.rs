@@ -14,13 +14,16 @@ lazy_static! {
     static ref MORSE_TO_ALPHA: HashMap<&'static str,char> =
         ALPHA_TO_MORSE.iter().map(|(&k,v)| (v.as_str(),k)).collect();
 
-    static ref GENETIC_CODE: HashMap<String,char> = {
+    static ref GENETIC_CODE_DNA: HashMap<String,char> = {
         let mut r = csv::ReaderBuilder::new()
             .has_headers(false)
             .delimiter(b'\t')
             .from_reader(&include_bytes!("../data/genetic_code.tsv")[..]);
         r.deserialize::<(String,char)>().map(csv::Result::unwrap).collect()
     };
+
+    static ref GENETIC_CODE_RNA: HashMap<String,char> =
+        GENETIC_CODE_DNA.iter().map(|(s,c)| (s.replace("T","U"), *c)).collect();
 }
 
 pub fn to_morse(c: char) -> Option<&'static str> {
@@ -34,7 +37,11 @@ pub fn from_morse(s: &str) -> Option<char> {
 }
 
 pub fn dna_letter(s: &str) -> Option<char> {
-    GENETIC_CODE.get(s).map(|&c| c)
+    GENETIC_CODE_DNA.get(s).map(|&c| c)
+}
+
+pub fn rna_letter(s: &str) -> Option<char> {
+    GENETIC_CODE_RNA.get(s).map(|&c| c)
 }
 
 #[test]

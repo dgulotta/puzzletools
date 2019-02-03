@@ -7,20 +7,64 @@ lazy_static! {
 
 /// A trait for types that could be interpreted as an ASCII string.
 /// Common types that implement `AsRef<str>` or `AsRef<[u8]>` should
-/// also implement this.
+/// also implement this.  Functions in the `puzzletools` crate use
+/// this trait in order to accept any kind of text.
+///
+/// # Examples
+/// Functions like `alphagram` accept a variety of different types:
+/// ```
+/// extern crate regex;
+/// use regex::Regex;
+/// use puzzletools::word::{Text, alphagram};
+///
+/// assert_eq!(&alphagram("TEXT"), "ETTX");
+/// assert_eq!(&alphagram(&b"TEXT"[..]), "ETTX");
+/// let s = Regex::new("..N").unwrap().replace_all("CONTEXT", "");
+/// assert_eq!(&alphagram(s), "ETTX");
+/// ```
+///
+/// For convenience, the `Text` trait offers both 0-indexing and
+/// 1-indexing:
+/// ```
+/// use puzzletools::word::Text;
+/// assert_eq!("TEXT".byte(2), b'X');
+/// assert_eq!("TEXT".byte_1(3), b'X');
+/// assert_eq!("TEXT".char(2), 'X');
+/// assert_eq!("TEXT".char_1(3), 'X');
+/// assert_eq!("TEXT".get_char_1(3), Some('X'));
+/// assert_eq!("TEXT".get_char_1(5), None);
+/// ```
+///
 pub trait Text {
+    /// Returns representation of this text as a string slice.
     fn as_str(&self) -> &str;
+    /// Returns representation of this text as a byte array slice.
     fn as_bytes(&self) -> &[u8] { self.as_str().as_ref() }
+    /// Returns an iterator over the letters of this text, considered as bytes.
     fn bytes(&self) -> std::str::Bytes { self.as_str().bytes() }
+    /// Returns an iterator over the letters of this text, considered as characters.
     fn chars(&self) -> std::str::Chars { self.as_str().chars() }
+    /// Returns the byte at the index `idx`.
     fn byte(&self, idx: usize) -> u8 { self.as_bytes()[idx] }
+    /// Returns the character at the index `idx`.
     fn char(&self, idx: usize) -> char { self.byte(idx) as char }
+    /// Returns the byte at the index `idx`, or `None` if `idx` is out of bounds.
     fn get_byte(&self, idx: usize) -> Option<u8> {
         self.as_bytes().get(idx).map(|&c| c)
     }
+    /// Returns the character at the index `idx`, or `None` if `idx` is out of bounds.
     fn get_char(&self, idx: usize) -> Option<char> {
         self.get_byte(idx).map(|c| c as char)
     }
+    /// Returns the byte at the index `idx - 1`.
+    fn byte_1(&self, idx: usize) -> u8 { self.byte(idx - 1) }
+    /// Returns the character at the index `idx - 1`.
+    fn char_1(&self, idx: usize) -> char { self.char(idx - 1) }
+    /// Returns the byte at the index `idx - 1`, or `None` if `idx - 1` is out of bounds.
+    fn get_byte_1(&self, idx: usize) -> Option<u8> { self.get_byte(idx - 1) }
+    /// Returns the character at the index `idx - 1`, or `None` if `idx - 1` is out of bounds.
+    fn get_char_1(&self, idx: usize) -> Option<char> { self.get_char(idx - 1) }
+    /// Creates a representation of this text as a byte vector.
     fn to_byte_vec(&self) -> Vec<u8> { self.as_bytes().to_owned() }
 }
 
@@ -32,7 +76,7 @@ macro_rules! text_impl_str {
 
 macro_rules! text_impl_bytes {
     () => (
-        fn as_str(&self) -> &str { ::std::str::from_utf8(self).unwrap() }
+        fn as_str(&self) -> &str { unsafe { ::std::str::from_utf8_unchecked(self) } }
         fn as_bytes(&self) -> &[u8] { self }
     )
 }
@@ -83,6 +127,33 @@ impl Text for Vec<u8> {
 
 impl<'a> Text for &'a Vec<u8> {
     text_impl_bytes!();
+}
+
+/// A byte or a character.  Functions in the `puzzletools` crate use
+/// this trait in order to accept either bytes or characters.
+/// ```
+/// use puzzletools::word::is_dna_letter;
+/// assert!(is_dna_letter('A'));
+/// assert!(is_dna_letter(b'A'));
+/// ```
+pub trait Letter {
+    fn byte(self) -> u8;
+}
+
+impl Letter for u8 {
+    fn byte(self) -> u8 { self }
+}
+
+impl<'a> Letter for &'a u8 {
+    fn byte(self) -> u8 { *self }
+}
+
+impl Letter for char {
+    fn byte(self) -> u8 { self as u8 }
+}
+
+impl<'a> Letter for &'a char {
+    fn byte(self) -> u8 { *self as u8 }
 }
 
 /// Removes spaces and punctuation from a string.  Warning: currently
@@ -262,45 +333,45 @@ pub fn special_letter_block<S: Text, F: FnMut(u8) -> bool>(s: S, mut pred: F) ->
     else { None }
 }
 
-pub fn is_dna_letter(c: u8) -> bool {
-    match c {
+pub fn is_dna_letter<L: Letter>(c: L) -> bool {
+    match c.byte() {
         b'A' | b'C' | b'T' | b'G' => true,
         _ => false
     }
 }
 
-pub fn is_rna_letter(c: u8) -> bool {
-    match c {
+pub fn is_rna_letter<L: Letter>(c: L) -> bool {
+    match c.byte() {
         b'A' | b'C' | b'U' | b'G' => true,
         _ => false
     }
 }
 
 /// Returns `true` if the character is a vowel, including Y.
-pub fn is_vowel_y(c: u8) -> bool {
-    match c {
+pub fn is_vowel_y<L: Letter>(c: L) -> bool {
+    match c.byte() {
         b'A' | b'E' | b'I' | b'O' | b'U' | b'Y' => true,
         _ => false
     }
 }
 
 /// Retuns `true` if the character is a vowel, not including Y.
-pub fn is_vowel_no_y(c: u8) -> bool {
-    match c {
+pub fn is_vowel_no_y<L: Letter>(c: L) -> bool {
+    match c.byte() {
         b'A' | b'E' | b'I' | b'O' | b'U' => true,
         _ => false
     }
 }
 
-pub fn is_news_letter(c: u8) -> bool {
-    match c {
+pub fn is_news_letter<L: Letter>(c: L) -> bool {
+    match c.byte() {
         b'E' | b'N' | b'S' | b'W' => true,
         _ => false
     }
 }
 
-pub fn is_roman_numeral_letter(c: u8) -> bool {
-    match c {
+pub fn is_roman_numeral_letter<L: Letter>(c: L) -> bool {
+    match c.byte() {
         b'I' | b'V' | b'X' | b'L' | b'C' | b'D' | b'M' => true,
         _ => false
     }
