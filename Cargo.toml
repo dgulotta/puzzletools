@@ -2,6 +2,7 @@
 name = "puzzletools"
 version = "0.1.0"
 authors = ["Daniel R Gulotta <dgulotta@alum.mit.edu>"]
+edition = "2018"
 
 [dependencies]
 csv = "^1.0"

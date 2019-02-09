@@ -1,14 +1,13 @@
 use std::iter::FromIterator;
-use word::slugify;
 use csv;
 use std::borrow::Cow;
 use std::io::{Read, BufReader};
 use std::ops::DerefMut;
 use std::fs::File;
 use std::path::PathBuf;
-use search::SearchResult;
-use error::Result;
-use word::{Text, slug_len};
+use crate::error::Result;
+use crate::search::SearchResult;
+use crate::word::{Text, slug_len, slugify};
 
 pub fn load_wordlist_file(name: &str) -> Result<BufReader<File>>
 {
@@ -34,7 +33,7 @@ struct CsvIter<'a, R: Read + 'a>
 impl<'a, R: Read + 'a> CsvIter<'a, R> {
     pub fn new(r: csv::Reader<R>) -> Self {
         let mut rdr = Box::new(r);
-        let iter = unsafe { ::util::prolong_mut(rdr.deref_mut()).deserialize() };
+        let iter = unsafe { crate::util::prolong_mut(rdr.deref_mut()).deserialize() };
         Self { _rdr: rdr, iter }
     }
 }
@@ -47,7 +46,7 @@ impl<'a, R: Read + 'a> Iterator for CsvIter<'a, R> {
     }
 }
 
-pub fn wordlist_iter<R: Read>(r: R) -> impl Iterator<Item=WordFreq>
+pub fn wordlist_iter<R: Read+'static>(r: R) -> impl Iterator<Item=WordFreq>
 {
     let rdr = csv::ReaderBuilder::new()
             .has_headers(false)
@@ -211,7 +210,7 @@ impl FromIterator<WordlistEntry> for Wordlist {
     {
         let ent: Vec<_> = iter.into_iter().collect();
         let lookup = ent.iter().enumerate().map(|(n,wf)| {
-            let uent = unsafe { ::util::prolong(wf.slug.as_ref()) };
+            let uent = unsafe { crate::util::prolong(wf.slug.as_ref()) };
             (uent, n as u32)
         }).collect();
         Wordlist {
