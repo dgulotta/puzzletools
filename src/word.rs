@@ -251,6 +251,7 @@ where
     S: Text,
     T: Text,
 {
+    if s.bytes().len() + (additions as usize) != t.bytes().len() { return false; }
     let mut it1 = s.bytes().peekable();
     for c2 in t.bytes() {
         if it1.peek() == Some(&c2) {
@@ -262,7 +263,7 @@ where
             additions -= 1;
         }
     }
-    return additions == 0 && it1.peek().is_none();
+    return additions == 0;
 }
 
 /// Returns a list of all letters that appear twice consecutively
