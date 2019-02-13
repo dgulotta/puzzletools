@@ -62,7 +62,7 @@ pub fn load_wordlist_iter(name: &str) -> Result<impl Iterator<Item=WordFreq>>
     Ok(wordlist_iter(file))
 }
 
-#[derive(Clone,Debug,Deserialize)]
+#[derive(Clone,Debug,Deserialize,Eq,PartialEq)]
 pub struct WordlistEntry {
     pub word: String,
     pub slug: String,
@@ -192,6 +192,10 @@ impl Wordlist {
         Self::load_from_reader(r)
     }
 
+    pub fn iter(&self) -> ::std::slice::Iter<WordlistEntry> {
+        self.into_iter()
+    }
+
 }
 
 impl<'a> IntoIterator for &'a Wordlist {
@@ -231,14 +235,65 @@ impl FromIterator<WordFreq> for Wordlist {
     }
 }
 
-pub fn pairs<'a,I,F,E,W>(list1: I, list2: &'a Wordlist, mut trans: F)
-    -> impl Iterator<Item = (E, &'a WordlistEntry)>
+/// Returns pairs of words satisfying certain properties.
+///
+/// More specifically, this function returns pairs `(word1, word2)`
+/// such that the `word1` is in `list1`, `word2` is in `list2`, and
+/// `word2 = trans(word1)`.
+/// ```
+/// use std::io::Cursor;
+/// use puzzletools::wordlist::{Wordlist, pairs};
+/// let wl = "\
+/// AIRS,1
+/// PAIRS,1";
+/// let wl = Wordlist::load_from_reader(Cursor::new(wl)).unwrap();
+/// let v: Vec<_> = pairs(wl.iter(), &wl, |w| &w.slug[1..]).collect();
+/// assert_eq!(&v, &[(wl.get("PAIRS").unwrap(), wl.get("AIRS").unwrap())]);
+/// ```
+pub fn pairs<'a,I,F,W>(list1: I, list2: &'a Wordlist, mut trans: F)
+    -> impl Iterator<Item = (I::Item, &'a WordlistEntry)>
 where
-    I: IntoIterator<Item = E>,
-    F: FnMut(&E) -> W,
+    I: IntoIterator,
+    F: FnMut(&I::Item) -> W,
     W: Text,
 {
     list1.into_iter().filter_map(move |w1| {
         list2.get(trans(&w1).as_bytes()).map(|w2| (w1,w2))
     })
+}
+
+/// Returns pairs of words satisfying certain properties.
+///
+/// More specifically, this function returns pairs `(word1, word2)`
+/// such that the `word1` is in `list1`, `word2` is in `list2`, and
+/// `word2` is one of the elements of the iterator `trans(word1)`.
+/// ```
+/// use std::io::Cursor;
+/// use puzzletools::wordlist::{Wordlist, WordlistEntry, pairs_iter};
+/// let wl = "\
+/// AIRS,1
+/// PAIRS,1";
+/// let wl = Wordlist::load_from_reader(Cursor::new(wl)).unwrap();
+/// let v: Vec<_> = pairs_iter(wl.iter(), &wl, move |w| {
+///     let s = w.slug.clone();
+///     (b'A'..b'Z').map(move |c|
+///         format!("{}{}", c as char, &s)
+///     )
+/// }).collect();
+/// assert_eq!(&v, &[(wl.get("AIRS").unwrap(), wl.get("PAIRS").unwrap())]);
+/// ```
+pub fn pairs_iter<'a,I,F,J>(list1: I, list2: &'a Wordlist, mut trans: F)
+    -> impl Iterator<Item = (<I::Item as ToOwned>::Owned, &'a WordlistEntry)>
+where
+    I: IntoIterator,
+    I::Item: ToOwned,
+    F: FnMut(&I::Item) -> J,
+    J: IntoIterator,
+    J::Item: Text
+{
+    list1.into_iter().flat_map(move |w1|
+        trans(&w1).into_iter().filter_map(move |wt: J::Item|
+            list2.get(wt).map(|w2| (w1.to_owned(), w2))
+        )
+    )
 }

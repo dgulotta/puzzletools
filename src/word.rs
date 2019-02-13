@@ -378,6 +378,20 @@ pub fn is_roman_numeral_letter<L: Letter>(c: L) -> bool {
     }
 }
 
+pub fn is_ascender<L: Letter>(c: L) -> bool {
+    match c.byte() {
+        b'B' | b'D' | b'F' | b'H' | b'K' | b'L' | b'T' => true,
+        _ => false
+    }
+}
+
+pub fn is_descender<L: Letter>(c: L) -> bool {
+    match c.byte() {
+        b'G' | b'J' | b'P' | b'Q' | b'Y' => true,
+        _ => false
+    }
+}
+
 #[test]
 fn alphagram_test() {
     assert_eq!(alphagram("POTATO"), "AOOPTT");
