@@ -64,8 +64,11 @@ pub fn load_wordlist_iter(name: &str) -> Result<impl Iterator<Item=WordFreq>>
 
 #[derive(Clone,Debug,Deserialize,Eq,PartialEq)]
 pub struct WordlistEntry {
+    /// The word, including spaces and punctuation.
     pub word: String,
+    /// The word, with spaces and punctuation removed.
     pub slug: String,
+    /// The frequency of the word in the wordlist.
     pub freq: u64,
 }
 
@@ -129,6 +132,7 @@ impl<'a> SearchResult for &'a WordlistEntry {
 }
 
 impl WordlistEntry {
+    /// The length of the word, not counting spaces and punctuation.
     pub fn len(&self) -> usize {
         self.slug.len()
     }
@@ -157,7 +161,11 @@ impl<'a, 'b> SearchResult for (&'a WordFreq, &'b WordlistEntry) {
     pair_search_result_impl!();
 }
 
-
+/// A structure that can be used to iterate over all words in a
+/// wordlist, or to look up the frequency of a particular word.
+///
+/// If you just want to iterate over the words in a wordlist and never
+/// need to do lookups, it is faster to use `wordlist_iter`.
 pub struct Wordlist {
     entries: Vec<WordlistEntry>,
     lookup: fnv::FnvHashMap<&'static [u8], u32>,
@@ -171,6 +179,16 @@ impl Wordlist {
         )
     }
 
+    /// Returns the frequency of the given slug, or zero if the slug
+    /// does not appear in the wordlist.
+    /// ```
+    /// use std::io::Cursor;
+    /// use puzzletools::wordlist::{Wordlist};
+    /// let wltext = "TWO,2";
+    /// let wl = Wordlist::load_from_reader(Cursor::new(wltext)).unwrap();
+    /// assert_eq!(wl.freq("TWO"), 2);
+    /// assert_eq!(wl.freq("MISSING"), 0);
+    /// ```
     pub fn freq<S: Text>(&self, s: S) -> u64
     {
         self.lookup.get(s.as_bytes()).map_or(0, |&n| {
@@ -269,11 +287,11 @@ where
 /// `word2` is one of the elements of the iterator `trans(word1)`.
 /// ```
 /// use std::io::Cursor;
-/// use puzzletools::wordlist::{Wordlist, WordlistEntry, pairs_iter};
-/// let wl = "\
+/// use puzzletools::wordlist::{Wordlist, pairs_iter};
+/// let wltext = "\
 /// AIRS,1
 /// PAIRS,1";
-/// let wl = Wordlist::load_from_reader(Cursor::new(wl)).unwrap();
+/// let wl = Wordlist::load_from_reader(Cursor::new(wltext)).unwrap();
 /// let v: Vec<_> = pairs_iter(wl.iter(), &wl, move |w| {
 ///     let s = w.slug.clone();
 ///     (b'A'..b'Z').map(move |c|

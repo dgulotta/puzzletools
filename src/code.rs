@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use csv;
+use crate::word::Text;
 
 lazy_static! {
     static ref ALPHA_TO_MORSE: HashMap<char,String> = {
@@ -26,30 +27,46 @@ lazy_static! {
         GENETIC_CODE_DNA.iter().map(|(s,c)| (s.replace("T","U"), *c)).collect();
 }
 
+// Right now the Morse code functions recognize a non-ascii character
+// (MULTIPLICATION SIGN), which clashes with the behavior of the rest of
+// the library.  We should probably get rid of it.
+/// Returns the Morse code representation of the given character.
+/// ```
+/// use puzzletools::code::to_morse;
+/// assert_eq!(to_morse('m'), Some("--"));
+/// ```
 pub fn to_morse(c: char) -> Option<&'static str> {
     ALPHA_TO_MORSE.get(&c.to_ascii_uppercase()).map(
         String::as_str,
     )
 }
 
-pub fn from_morse(s: &str) -> Option<char> {
-    MORSE_TO_ALPHA.get(s).map(|&c| c)
+/// Returns the character with the given Morse code representation, if
+/// one exists.
+/// ```
+/// use puzzletools::code::from_morse;
+/// assert_eq!(from_morse("--"), Some('M'));
+/// ```
+pub fn from_morse<S: Text>(s: S) -> Option<char> {
+    MORSE_TO_ALPHA.get(s.as_str()).map(|&c| c)
 }
 
-pub fn dna_letter(s: &str) -> Option<char> {
-    GENETIC_CODE_DNA.get(s).map(|&c| c)
+/// Returns the letter of the amino acid corresponding to the given
+/// three-letter DNA sequence.
+/// ```
+/// use puzzletools::code::dna_letter;
+/// assert_eq!(dna_letter("ATA"), Some('I'));
+/// ```
+pub fn dna_letter<S: Text>(s: S) -> Option<char> {
+    GENETIC_CODE_DNA.get(s.as_str()).map(|&c| c)
 }
 
-pub fn rna_letter(s: &str) -> Option<char> {
-    GENETIC_CODE_RNA.get(s).map(|&c| c)
-}
-
-#[test]
-fn to_morse_test() {
-    assert_eq!(to_morse('m'), Some("--"));
-}
-
-#[test]
-fn from_morse_test() {
-    assert_eq!(from_morse("--"), Some('M'));
+/// Returns the letter of the amino acid corresponding to the given
+/// three-letter RNA sequence.
+/// ```
+/// use puzzletools::code::rna_letter;
+/// assert_eq!(rna_letter("AUA"), Some('I'));
+/// ```
+pub fn rna_letter<S: Text>(s: S) -> Option<char> {
+    GENETIC_CODE_RNA.get(s.as_str()).map(|&c| c)
 }
