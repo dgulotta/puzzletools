@@ -56,12 +56,12 @@ pub trait Text {
     fn get_char(&self, idx: usize) -> Option<char> {
         self.get_byte(idx).map(|c| c as char)
     }
-    /// Tests whether the byte at index `idx` equals b, returning false if
+    /// Tests whether the byte at index `idx` equals `b`, returning false if
     /// `idx` is out of bounds.
     fn byte_eq(&self, idx: usize, b: u8) -> bool {
         self.get_byte(idx) == Some(b)
     }
-    /// Tests whether the character at index `idx` equals b, returning false
+    /// Tests whether the character at index `idx` equals `c`, returning false
     /// if `idx` is out of bounds.
     fn char_eq(&self, idx: usize, c: char) -> bool {
         self.get_char(idx) == Some(c)
@@ -74,12 +74,12 @@ pub trait Text {
     fn get_byte_1(&self, idx: usize) -> Option<u8> { self.get_byte(idx - 1) }
     /// Returns the character at the index `idx - 1`, or `None` if `idx - 1` is out of bounds.
     fn get_char_1(&self, idx: usize) -> Option<char> { self.get_char(idx - 1) }
-    /// Tests whether the byte at index `idx - 1` equals b, returning false if
-    /// `idx - 1` is out of bounds.
+    /// Tests whether the byte at index `idx - 1` equals `b`, returning false
+    /// if `idx - 1` is out of bounds.
     fn byte_1_eq(&self, idx: usize, b: u8) -> bool {
         self.get_byte_1(idx) == Some(b)
     }
-    /// Tests whether the character at index `idx - 1` equals b, returning
+    /// Tests whether the character at index `idx - 1` equals `c`, returning
     /// false if `idx - 1` is out of bounds.
     fn char_1_eq(&self, idx: usize, c: char) -> bool {
         self.get_char_1(idx) == Some(c)
