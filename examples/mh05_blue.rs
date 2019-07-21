@@ -26,7 +26,6 @@ fn main() {
     let it = load_wordlist_iter("combined.freq.txt").unwrap();
     it.filter(|w| {
         let s = w.slug();
-        binary(&s) == Some(b'W') &&
-            s.get_byte(5) == Some(b'I')
+        binary(&s) == Some(b'W') && s.char_1_eq(6, 'I')
     }).take(50).for_each(print_result);
 }
