@@ -2,7 +2,6 @@ use std::iter::FromIterator;
 use csv;
 use std::borrow::Cow;
 use std::io::{Read, BufReader};
-use std::ops::DerefMut;
 use std::fs::File;
 use std::path::PathBuf;
 use crate::error::Result;
@@ -20,29 +19,13 @@ pub fn load_wordlist_file(name: &str) -> Result<BufReader<File>>
     Ok(BufReader::new(File::open(path)?))
 }
 
-/*
- * Ideally, we would use a crate like owned_ref or rental here, but I
- * don't think either of them covers this use case.
- */
-struct CsvIter<'a, R: Read + 'a>
-{
-    _rdr: Box<csv::Reader<R>>,
-    iter: csv::DeserializeRecordsIter<'a, R, WordFreq>
-}
+struct CsvIter<R: Read>(csv::DeserializeRecordsIntoIter<R, WordFreq>);
 
-impl<'a, R: Read + 'a> CsvIter<'a, R> {
-    pub fn new(r: csv::Reader<R>) -> Self {
-        let mut rdr = Box::new(r);
-        let iter = unsafe { crate::util::prolong_mut(rdr.deref_mut()).deserialize() };
-        Self { _rdr: rdr, iter }
-    }
-}
-
-impl<'a, R: Read + 'a> Iterator for CsvIter<'a, R> {
+impl<R: Read> Iterator for CsvIter<R> {
     type Item = WordFreq;
 
     fn next(&mut self) -> Option<WordFreq> {
-        self.iter.next().map(::std::result::Result::unwrap)
+        self.0.next().map(::std::result::Result::unwrap)
     }
 }
 
@@ -51,7 +34,7 @@ pub fn wordlist_iter<R: Read+'static>(r: R) -> impl Iterator<Item=WordFreq>
     let rdr = csv::ReaderBuilder::new()
             .has_headers(false)
             .from_reader(r);
-    CsvIter::new(rdr)
+    CsvIter(rdr.into_deserialize())
 }
 
 /// Returns an iterator that iterates over all words in the given wordlist.

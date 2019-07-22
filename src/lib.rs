@@ -26,8 +26,4 @@ mod util {
         &*(r as *const T)
     }
 
-    pub unsafe fn prolong_mut<'a, 'b, T: ?Sized>(r: &'a mut T) -> &'b mut T {
-        &mut *(r as *mut T)
-    }
-
 }
