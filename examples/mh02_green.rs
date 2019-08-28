@@ -1,7 +1,8 @@
 extern crate puzzletools;
 
+use puzzletools::letter::is_news_letter;
 use puzzletools::search::print_result;
-use puzzletools::word::{Text, is_news_letter, special_letter_block};
+use puzzletools::word::{Text, special_letter_block};
 use puzzletools::wordlist::load_wordlist_iter;
 
 fn is_xvi(c: u8) -> bool {

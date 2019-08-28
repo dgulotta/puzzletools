@@ -1,5 +1,6 @@
 pub mod code;
 pub mod data;
+pub mod letter;
 pub mod io;
 pub mod search;
 pub mod word;

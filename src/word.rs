@@ -1,5 +1,6 @@
 use std::borrow::Cow;
 use regex::Regex;
+use crate::letter::lett_to_num_0;
 
 lazy_static! {
     static ref SLUG_RE: Regex = Regex::new("[^A-Z]").unwrap();
@@ -86,6 +87,8 @@ pub trait Text {
     }
     /// Creates a representation of this text as a byte vector.
     fn to_byte_vec(&self) -> Vec<u8> { self.as_bytes().to_owned() }
+    /// Returns the length of this text in bytes.
+    fn len(&self) -> usize { self.as_bytes().len() }
 }
 
 macro_rules! text_impl_str {
@@ -149,33 +152,6 @@ impl<'a> Text for &'a Vec<u8> {
     text_impl_bytes!();
 }
 
-/// A byte or a character.  Functions in the `puzzletools` crate use
-/// this trait in order to accept either bytes or characters.
-/// ```
-/// use puzzletools::word::is_dna_letter;
-/// assert!(is_dna_letter('A'));
-/// assert!(is_dna_letter(b'A'));
-/// ```
-pub trait Letter {
-    fn byte(self) -> u8;
-}
-
-impl Letter for u8 {
-    fn byte(self) -> u8 { self }
-}
-
-impl<'a> Letter for &'a u8 {
-    fn byte(self) -> u8 { *self }
-}
-
-impl Letter for char {
-    fn byte(self) -> u8 { self as u8 }
-}
-
-impl<'a> Letter for &'a char {
-    fn byte(self) -> u8 { *self as u8 }
-}
-
 /// Removes spaces and punctuation from a string.  Warning: currently
 /// also removes lowercase letters, so only use this with uppercase strings.
 /// ```
@@ -207,16 +183,6 @@ pub fn alphagram<S: Text>(s: S) -> String {
     let mut copy = s.to_byte_vec();
     copy.sort_unstable();
     unsafe { String::from_utf8_unchecked(copy) }
-}
-
-/// Converts an uppercase letter into a number.  This is zero-offset,
-/// so A becomes 0.
-/// ```
-/// use puzzletools::word::lett_to_num_0;
-/// assert_eq!(lett_to_num_0(b'E'),4);
-/// ```
-pub fn lett_to_num_0(c: u8) -> usize {
-    (c - b'A') as usize
 }
 
 /// Applies a subsitution cipher so that the first letter of the word becomes A,
@@ -324,8 +290,8 @@ pub fn repeated_bigrams<S: Text>(s: S) -> Vec<[u8; 2]>
 /// the predicate `pred`, returns the location of that block.
 /// Otherwise returns None.
 /// ```
-/// use std::ops::Range;
-/// use puzzletools::word::{is_roman_numeral_letter, special_letter_block};
+/// use puzzletools::letter::is_roman_numeral_letter;
+/// use puzzletools::word::special_letter_block;
 /// assert_eq!(special_letter_block("ARXIV", is_roman_numeral_letter), Some(2..5));
 /// assert_eq!(special_letter_block("REFLEXIVE", is_roman_numeral_letter), None);
 /// assert_eq!(special_letter_block("THROUGHOUT", is_roman_numeral_letter), None);
@@ -352,64 +318,6 @@ pub fn special_letter_block<S: Text, F: FnMut(u8) -> bool>(s: S, mut pred: F) ->
         Some(st..en)
     }
     else { None }
-}
-
-pub fn is_dna_letter<L: Letter>(c: L) -> bool {
-    match c.byte() {
-        b'A' | b'C' | b'T' | b'G' => true,
-        _ => false
-    }
-}
-
-pub fn is_rna_letter<L: Letter>(c: L) -> bool {
-    match c.byte() {
-        b'A' | b'C' | b'U' | b'G' => true,
-        _ => false
-    }
-}
-
-/// Returns `true` if the character is a vowel, including Y.
-pub fn is_vowel_y<L: Letter>(c: L) -> bool {
-    match c.byte() {
-        b'A' | b'E' | b'I' | b'O' | b'U' | b'Y' => true,
-        _ => false
-    }
-}
-
-/// Retuns `true` if the character is a vowel, not including Y.
-pub fn is_vowel_no_y<L: Letter>(c: L) -> bool {
-    match c.byte() {
-        b'A' | b'E' | b'I' | b'O' | b'U' => true,
-        _ => false
-    }
-}
-
-pub fn is_news_letter<L: Letter>(c: L) -> bool {
-    match c.byte() {
-        b'E' | b'N' | b'S' | b'W' => true,
-        _ => false
-    }
-}
-
-pub fn is_roman_numeral_letter<L: Letter>(c: L) -> bool {
-    match c.byte() {
-        b'I' | b'V' | b'X' | b'L' | b'C' | b'D' | b'M' => true,
-        _ => false
-    }
-}
-
-pub fn is_ascender<L: Letter>(c: L) -> bool {
-    match c.byte() {
-        b'B' | b'D' | b'F' | b'H' | b'K' | b'L' | b'T' => true,
-        _ => false
-    }
-}
-
-pub fn is_descender<L: Letter>(c: L) -> bool {
-    match c.byte() {
-        b'G' | b'J' | b'P' | b'Q' | b'Y' => true,
-        _ => false
-    }
 }
 
 #[test]
