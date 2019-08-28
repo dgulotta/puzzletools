@@ -93,3 +93,16 @@ pub fn is_descender<L: Letter>(c: L) -> bool {
     }
 }
 
+pub fn scrabble_value<L: Letter>(c: L) -> u32 {
+    match c.byte() {
+        b'A' | b'E' | b'I' | b'O' | b'U' | b'L' | b'N' | b'S' | b'T' | b'R' => 1,
+        b'D' | b'G' => 2,
+        b'B' | b'C' | b'M' | b'P' => 3,
+        b'F' | b'H' | b'V' | b'W' | b'Y' => 4,
+        b'K' => 5,
+        b'J' | b'X' => 8,
+        b'Q' | b'Z' => 10,
+        b'.' => 0,
+        _ => panic!("invalid letter")
+    }
+}
