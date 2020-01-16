@@ -79,6 +79,11 @@ fn main()
 There are some more examples (that contain Mystery Hunt spoilers) in the
 `examples` folder.
 
+To build the documentation, run
+```
+cargo doc --no-deps
+```
+
 ## License
 Dual licensed under the [MIT License](LICENSE-MIT) and the
 [Apache License, Version 2.0](LICENSE-APACHE).

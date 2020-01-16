@@ -1,3 +1,5 @@
+//! Codes (Morse, amino acids)
+
 use std::collections::HashMap;
 use csv;
 use crate::word::Text;

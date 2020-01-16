@@ -1,3 +1,5 @@
+//! Data sets (currently just the NATO alphabet)
+
 lazy_static! {
     /// A list of the words in the NATO phonetic alphabet.
     /// ```

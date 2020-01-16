@@ -1,3 +1,5 @@
+//! Utilities for working with individual words.
+
 use std::borrow::Cow;
 use regex::Regex;
 use crate::letter::lett_to_num_0;

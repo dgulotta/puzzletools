@@ -1,3 +1,5 @@
+//! Utilities for searching or iterating through a word list.
+
 use std::iter::FromIterator;
 use csv;
 use std::borrow::Cow;

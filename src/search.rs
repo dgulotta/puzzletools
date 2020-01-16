@@ -1,3 +1,5 @@
+//! Convenience functions for printing out search results.
+
 use std::collections::BinaryHeap;
 use std::cmp::Ordering;
 use std::fmt::Display;

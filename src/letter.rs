@@ -1,3 +1,5 @@
+//! Tests for commonly used properties of individual letters.
+
 /// A byte or a character.  Functions in the `puzzletools` crate use
 /// this trait in order to accept either bytes or characters.
 /// ```
