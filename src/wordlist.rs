@@ -269,6 +269,40 @@ where
 ///
 /// More specifically, this function returns pairs `(word1, word2)`
 /// such that the `word1` is in `list1`, `word2` is in `list2`, and
+/// `trans(word1) == Some(word2)`.
+/// ```
+/// use std::io::Cursor;
+/// use puzzletools::wordlist::{Wordlist, WordlistEntry, pairs_filter};
+/// let wl = "\
+/// AIRS,1
+/// PAIRS,1";
+/// let wl = Wordlist::load_from_reader(Cursor::new(wl)).unwrap();
+/// fn pred<'a>(w: &&'a WordlistEntry) -> Option<&'a str> {
+///     if w.len() > 0 { Some(&w.slug[1..]) }
+///     else { None }
+/// };
+/// let v: Vec<_> = pairs_filter(wl.iter(), &wl, pred).collect();
+/// assert_eq!(&v, &[(wl.get("PAIRS").unwrap(), wl.get("AIRS").unwrap())]);
+/// ```
+pub fn pairs_filter<'a,I,F,W>(list1: I, list2: &'a Wordlist, mut trans: F)
+    -> impl Iterator<Item = (I::Item, &'a WordlistEntry)>
+where
+    I: IntoIterator,
+    F: FnMut(&I::Item) -> Option<W>,
+    W: Text,
+{
+    list1.into_iter().filter_map(move |w1| {
+        if let Some(e) = trans(&w1) {
+            list2.get(e.as_bytes()).map(|w2| (w1,w2))
+        }
+        else { None }
+    })
+}
+
+/// Returns pairs of words satisfying certain properties.
+///
+/// More specifically, this function returns pairs `(word1, word2)`
+/// such that the `word1` is in `list1`, `word2` is in `list2`, and
 /// `word2` is one of the elements of the iterator `trans(word1)`.
 /// ```
 /// use std::io::Cursor;
