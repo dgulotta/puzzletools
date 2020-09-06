@@ -1,7 +1,6 @@
 //! Codes (Morse, amino acids)
 
 use std::collections::HashMap;
-use csv;
 use crate::word::Text;
 
 lazy_static! {
@@ -50,7 +49,7 @@ pub fn to_morse(c: char) -> Option<&'static str> {
 /// assert_eq!(from_morse("--"), Some('M'));
 /// ```
 pub fn from_morse<S: Text>(s: S) -> Option<char> {
-    MORSE_TO_ALPHA.get(s.as_str()).map(|&c| c)
+    MORSE_TO_ALPHA.get(s.as_str()).copied()
 }
 
 /// Returns the letter of the amino acid corresponding to the given
@@ -60,7 +59,7 @@ pub fn from_morse<S: Text>(s: S) -> Option<char> {
 /// assert_eq!(dna_letter("ATA"), Some('I'));
 /// ```
 pub fn dna_letter<S: Text>(s: S) -> Option<char> {
-    GENETIC_CODE_DNA.get(s.as_str()).map(|&c| c)
+    GENETIC_CODE_DNA.get(s.as_str()).copied()
 }
 
 /// Returns the letter of the amino acid corresponding to the given
@@ -70,5 +69,5 @@ pub fn dna_letter<S: Text>(s: S) -> Option<char> {
 /// assert_eq!(rna_letter("AUA"), Some('I'));
 /// ```
 pub fn rna_letter<S: Text>(s: S) -> Option<char> {
-    GENETIC_CODE_RNA.get(s.as_str()).map(|&c| c)
+    GENETIC_CODE_RNA.get(s.as_str()).copied()
 }

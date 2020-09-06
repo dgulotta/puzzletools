@@ -53,7 +53,7 @@ pub trait Text {
     fn char(&self, idx: usize) -> char { self.byte(idx) as char }
     /// Returns the byte at the index `idx`, or `None` if `idx` is out of bounds.
     fn get_byte(&self, idx: usize) -> Option<u8> {
-        self.as_bytes().get(idx).map(|&c| c)
+        self.as_bytes().get(idx).copied()
     }
     /// Returns the character at the index `idx`, or `None` if `idx` is out of bounds.
     fn get_char(&self, idx: usize) -> Option<char> {
@@ -91,6 +91,7 @@ pub trait Text {
     fn to_byte_vec(&self) -> Vec<u8> { self.as_bytes().to_owned() }
     /// Returns the length of this text in bytes.
     fn len(&self) -> usize { self.as_bytes().len() }
+    fn is_empty(&self) -> bool { self.as_bytes().is_empty() }
 }
 
 macro_rules! text_impl_str {
@@ -271,7 +272,7 @@ where
             additions -= 1;
         }
     }
-    return additions == 0;
+    additions == 0
 }
 
 /// Returns a list of all letters that appear twice consecutively

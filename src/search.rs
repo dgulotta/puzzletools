@@ -60,6 +60,6 @@ where
     T::Item: SearchResult,
 {
     SortResultIter {
-        heap: it.map(|x| SearchResultOrd(x)).collect()
+        heap: it.map(SearchResultOrd).collect()
     }
 }

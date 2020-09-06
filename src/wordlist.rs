@@ -1,7 +1,6 @@
 //! Utilities for searching or iterating through a word list.
 
 use std::iter::FromIterator;
-use csv;
 use std::borrow::Cow;
 use std::io::{Read, BufReader};
 use std::fs::File;
@@ -99,7 +98,7 @@ impl From<WordFreq> for WordlistEntry {
         let slug = slugify(&wf.word).to_string();
         WordlistEntry {
             word: wf.word,
-            slug: slug,
+            slug,
             freq: wf.freq,
         }
     }
@@ -222,7 +221,7 @@ impl FromIterator<WordlistEntry> for Wordlist {
         }).collect();
         Wordlist {
             entries: ent,
-            lookup: lookup,
+            lookup,
         }
     }
 }
@@ -253,8 +252,8 @@ impl FromIterator<WordFreq> for Wordlist {
 /// let v: Vec<_> = pairs(wl.iter(), &wl, |w| &w.slug[1..]).collect();
 /// assert_eq!(&v, &[(wl.get("PAIRS").unwrap(), wl.get("AIRS").unwrap())]);
 /// ```
-pub fn pairs<'a,I,F,W>(list1: I, list2: &'a Wordlist, mut trans: F)
-    -> impl Iterator<Item = (I::Item, &'a WordlistEntry)>
+pub fn pairs<I,F,W>(list1: I, list2: &Wordlist, mut trans: F)
+    -> impl Iterator<Item = (I::Item, &WordlistEntry)>
 where
     I: IntoIterator,
     F: FnMut(&I::Item) -> W,
@@ -284,8 +283,8 @@ where
 /// let v: Vec<_> = pairs_filter(wl.iter(), &wl, pred).collect();
 /// assert_eq!(&v, &[(wl.get("PAIRS").unwrap(), wl.get("AIRS").unwrap())]);
 /// ```
-pub fn pairs_filter<'a,I,F,W>(list1: I, list2: &'a Wordlist, mut trans: F)
-    -> impl Iterator<Item = (I::Item, &'a WordlistEntry)>
+pub fn pairs_filter<I,F,W>(list1: I, list2: &Wordlist, mut trans: F)
+    -> impl Iterator<Item = (I::Item, &WordlistEntry)>
 where
     I: IntoIterator,
     F: FnMut(&I::Item) -> Option<W>,
@@ -319,8 +318,8 @@ where
 /// }).collect();
 /// assert_eq!(&v, &[(wl.get("AIRS").unwrap(), wl.get("PAIRS").unwrap())]);
 /// ```
-pub fn pairs_iter<'a,I,F,J>(list1: I, list2: &'a Wordlist, mut trans: F)
-    -> impl Iterator<Item = (<I::Item as ToOwned>::Owned, &'a WordlistEntry)>
+pub fn pairs_iter<I,F,J>(list1: I, list2: &Wordlist, mut trans: F)
+    -> impl Iterator<Item = (<I::Item as ToOwned>::Owned, &WordlistEntry)>
 where
     I: IntoIterator,
     I::Item: ToOwned,
