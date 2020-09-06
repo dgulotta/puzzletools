@@ -210,6 +210,26 @@ pub fn ciphergram<S: Text>(s: S) -> String {
     unsafe { String::from_utf8_unchecked(v) }
 }
 
+/// Returns true if all letters in a word are different.
+/// ```
+/// use puzzletools::word::all_unique_letters;
+/// assert!(all_unique_letters("THUNDERCLAPS"));
+/// assert!(!all_unique_letters("LETTERS"));
+/// ```
+pub fn all_unique_letters<S: Text>(s: S) -> bool {
+    let mut seen = 0u32;
+    for c in s.bytes() {
+        let p = 1u32 << (c - b'A');
+        if seen & p == 0 {
+            seen |= p;
+        }
+        else {
+            return false;
+        }
+    }
+    true
+}
+
 /// Returns the number of unique letters in a word.
 /// ```
 /// use puzzletools::word::num_unique_letters;
