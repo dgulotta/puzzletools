@@ -2,6 +2,7 @@ pub mod code;
 pub mod data;
 pub mod letter;
 pub mod io;
+pub mod iter;
 pub mod search;
 pub mod word;
 pub mod wordlist;
