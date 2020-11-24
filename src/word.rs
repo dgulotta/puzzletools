@@ -89,6 +89,8 @@ pub trait Text {
     }
     /// Creates a representation of this text as a byte vector.
     fn to_byte_vec(&self) -> Vec<u8> { self.as_bytes().to_owned() }
+    /// Creates a representation of this text as a string.
+    fn text_to_string(&self) -> String { self.as_str().to_owned() }
     /// Returns the length of this text in bytes.
     fn len(&self) -> usize { self.as_bytes().len() }
     fn is_empty(&self) -> bool { self.as_bytes().is_empty() }
@@ -341,6 +343,20 @@ pub fn special_letter_block<S: Text, F: FnMut(u8) -> bool>(s: S, mut pred: F) ->
         Some(st..en)
     }
     else { None }
+}
+
+/// Returns substrings of `s` with a single letter missing.
+/// ```
+/// use std::collections::HashSet;
+/// use puzzletools::word::deleted_letter_iter;
+/// let s1: HashSet<_> = deleted_letter_iter("ABC").collect();
+/// let w2 = ["AB","AC","BC"];
+/// let s2: HashSet<_> = w2.iter().map(|s| s.to_string()).collect();
+/// assert_eq!(s1,s2);
+/// ```
+pub fn deleted_letter_iter<S: Text>(s: S) -> impl Iterator<Item=String> {
+    let ss = s.text_to_string();
+    (0..(s.len())).map(move |n| format!("{}{}",&ss[..n],&ss[(n+1)..]))
 }
 
 #[test]
