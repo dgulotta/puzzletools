@@ -2,6 +2,9 @@
 
 use std::collections::HashMap;
 use crate::word::Text;
+use crate::letter::{lett_to_num_0, Letter};
+
+const BRAILLE_BITS: [u8; 26] = [0x1,0x3,0x9,0x19,0x11,0xb,0x1b,0x13,0xa,0x1a,0x5,0x7,0xd,0x1d,0x15,0xf,0x1f,0x17,0xe,0x1e,0x25,0x27,0x3a,0x2d,0x3d,0x35];
 
 lazy_static! {
     static ref ALPHA_TO_MORSE: HashMap<char,String> = {
@@ -70,4 +73,18 @@ pub fn dna_letter<S: Text>(s: S) -> Option<char> {
 /// ```
 pub fn rna_letter<S: Text>(s: S) -> Option<char> {
     GENETIC_CODE_RNA.get(s.as_str()).copied()
+}
+
+fn braille_bits<L: Letter>(l: L) -> u8 {
+    BRAILLE_BITS[lett_to_num_0(l.byte())]
+}
+
+/// ```
+/// use puzzletools::code::braille_distance;
+/// assert_eq!(braille_distance('Q','W'),3);
+/// assert_eq!(braille_distance('Q','R'),1);
+/// assert_eq!(braille_distance('C','W'),4);
+/// ```
+pub fn braille_distance<L: Letter, M: Letter>(l1: L, l2: M) -> u32 {
+    (braille_bits(l1) ^ braille_bits(l2)).count_ones()
 }
