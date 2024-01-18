@@ -1,8 +1,8 @@
 pub mod code;
 pub mod data;
-pub mod letter;
 pub mod io;
 pub mod iter;
+pub mod letter;
 pub mod search;
 pub mod word;
 pub mod wordlist;
@@ -26,15 +26,14 @@ pub mod error {
         #[error("{0}")]
         Dotenv(#[from] dotenv::Error),
         #[error("{0}")]
-        Io(#[from] std::io::Error)
+        Io(#[from] std::io::Error),
     }
     pub type Result<T> = ::std::result::Result<T, Error>;
 }
 
 mod util {
 
-    pub unsafe fn prolong<'a, 'b, T: ?Sized>(r: &'a T) -> &'b T {
+    pub unsafe fn prolong<'b, T: ?Sized>(r: &T) -> &'b T {
         &*(r as *const T)
     }
-
 }

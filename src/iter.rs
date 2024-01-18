@@ -9,7 +9,5 @@
 /// ```
 pub fn unique_element<I: IntoIterator>(i: I) -> Option<I::Item> {
     let mut it = i.into_iter();
-    if let Some(e) = it.next() {
-        if it.next().is_none() { Some(e) } else { None }
-    } else { None }
+    it.next().filter(|_| it.next().is_none())
 }

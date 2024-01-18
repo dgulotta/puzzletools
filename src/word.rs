@@ -1,8 +1,8 @@
 //! Utilities for working with individual words.
 
-use std::borrow::Cow;
-use regex::Regex;
 use crate::letter::lett_to_num_0;
+use regex::Regex;
+use std::borrow::Cow;
 
 lazy_static! {
     static ref SLUG_RE: Regex = Regex::new("[^A-Z]").unwrap();
@@ -42,15 +42,25 @@ pub trait Text {
     /// Returns representation of this text as a string slice.
     fn as_str(&self) -> &str;
     /// Returns representation of this text as a byte array slice.
-    fn as_bytes(&self) -> &[u8] { self.as_str().as_ref() }
+    fn as_bytes(&self) -> &[u8] {
+        self.as_str().as_ref()
+    }
     /// Returns an iterator over the letters of this text, considered as bytes.
-    fn bytes(&self) -> std::str::Bytes { self.as_str().bytes() }
+    fn bytes(&self) -> std::str::Bytes {
+        self.as_str().bytes()
+    }
     /// Returns an iterator over the letters of this text, considered as characters.
-    fn chars(&self) -> std::str::Chars { self.as_str().chars() }
+    fn chars(&self) -> std::str::Chars {
+        self.as_str().chars()
+    }
     /// Returns the byte at the index `idx`.
-    fn byte(&self, idx: usize) -> u8 { self.as_bytes()[idx] }
+    fn byte(&self, idx: usize) -> u8 {
+        self.as_bytes()[idx]
+    }
     /// Returns the character at the index `idx`.
-    fn char(&self, idx: usize) -> char { self.byte(idx) as char }
+    fn char(&self, idx: usize) -> char {
+        self.byte(idx) as char
+    }
     /// Returns the byte at the index `idx`, or `None` if `idx` is out of bounds.
     fn get_byte(&self, idx: usize) -> Option<u8> {
         self.as_bytes().get(idx).copied()
@@ -70,13 +80,21 @@ pub trait Text {
         self.get_char(idx) == Some(c)
     }
     /// Returns the byte at the index `idx - 1`.
-    fn byte_1(&self, idx: usize) -> u8 { self.byte(idx - 1) }
+    fn byte_1(&self, idx: usize) -> u8 {
+        self.byte(idx - 1)
+    }
     /// Returns the character at the index `idx - 1`.
-    fn char_1(&self, idx: usize) -> char { self.char(idx - 1) }
+    fn char_1(&self, idx: usize) -> char {
+        self.char(idx - 1)
+    }
     /// Returns the byte at the index `idx - 1`, or `None` if `idx - 1` is out of bounds.
-    fn get_byte_1(&self, idx: usize) -> Option<u8> { self.get_byte(idx - 1) }
+    fn get_byte_1(&self, idx: usize) -> Option<u8> {
+        self.get_byte(idx - 1)
+    }
     /// Returns the character at the index `idx - 1`, or `None` if `idx - 1` is out of bounds.
-    fn get_char_1(&self, idx: usize) -> Option<char> { self.get_char(idx - 1) }
+    fn get_char_1(&self, idx: usize) -> Option<char> {
+        self.get_char(idx - 1)
+    }
     /// Tests whether the byte at index `idx - 1` equals `b`, returning false
     /// if `idx - 1` is out of bounds.
     fn byte_1_eq(&self, idx: usize, b: u8) -> bool {
@@ -88,13 +106,21 @@ pub trait Text {
         self.get_char_1(idx) == Some(c)
     }
     /// Creates a representation of this text as a byte vector.
-    fn to_byte_vec(&self) -> Vec<u8> { self.as_bytes().to_owned() }
+    fn to_byte_vec(&self) -> Vec<u8> {
+        self.as_bytes().to_owned()
+    }
     /// Creates a representation of this text as a string.
-    fn text_to_string(&self) -> String { self.as_str().to_owned() }
+    fn text_to_string(&self) -> String {
+        self.as_str().to_owned()
+    }
     /// Returns the length of this text in bytes.
-    fn len(&self) -> usize { self.as_bytes().len() }
+    fn len(&self) -> usize {
+        self.as_bytes().len()
+    }
     /// Returs true if this text is empty.
-    fn is_empty(&self) -> bool { self.as_bytes().is_empty() }
+    fn is_empty(&self) -> bool {
+        self.as_bytes().is_empty()
+    }
     /// Returns a reversed copy of this text.
     fn reversed(&self) -> String {
         let v: Vec<u8> = self.bytes().rev().collect();
@@ -103,16 +129,22 @@ pub trait Text {
 }
 
 macro_rules! text_impl_str {
-    () => (
-        fn as_str(&self) -> &str { self }
-    )
+    () => {
+        fn as_str(&self) -> &str {
+            self
+        }
+    };
 }
 
 macro_rules! text_impl_bytes {
-    () => (
-        fn as_str(&self) -> &str { unsafe { ::std::str::from_utf8_unchecked(self) } }
-        fn as_bytes(&self) -> &[u8] { self }
-    )
+    () => {
+        fn as_str(&self) -> &str {
+            unsafe { ::std::str::from_utf8_unchecked(self) }
+        }
+        fn as_bytes(&self) -> &[u8] {
+            self
+        }
+    };
 }
 
 impl Text for str {
@@ -131,11 +163,11 @@ impl<'a> Text for &'a String {
     text_impl_str!();
 }
 
-impl<'a> Text for Cow<'a,str> {
+impl<'a> Text for Cow<'a, str> {
     text_impl_str!();
 }
 
-impl<'a, 'b> Text for &'a Cow<'b,str> {
+impl<'a, 'b> Text for &'a Cow<'b, str> {
     text_impl_str!();
 }
 
@@ -147,11 +179,11 @@ impl<'a> Text for &'a [u8] {
     text_impl_bytes!();
 }
 
-impl<'a> Text for Cow<'a,[u8]> {
+impl<'a> Text for Cow<'a, [u8]> {
     text_impl_bytes!();
 }
 
-impl<'a, 'b> Text for &'a Cow<'b,[u8]> {
+impl<'a, 'b> Text for &'a Cow<'b, [u8]> {
     text_impl_bytes!();
 }
 
@@ -213,9 +245,7 @@ pub fn ciphergram<S: Text>(s: S) -> String {
             count += 1;
         }
     }
-    let v = s.bytes()
-        .map(|c| b'A' + seen[lett_to_num_0(c)])
-        .collect();
+    let v = s.bytes().map(|c| b'A' + seen[lett_to_num_0(c)]).collect();
     unsafe { String::from_utf8_unchecked(v) }
 }
 
@@ -231,8 +261,7 @@ pub fn all_unique_letters<S: Text>(s: S) -> bool {
         let p = 1u32 << (c - b'A');
         if seen & p == 0 {
             seen |= p;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -268,7 +297,9 @@ where
     S: Text,
     T: Text,
 {
-    if s.bytes().len() + (additions as usize) != t.bytes().len() { return false; }
+    if s.bytes().len() + (additions as usize) != t.bytes().len() {
+        return false;
+    }
     let mut it1 = s.bytes().peekable();
     for c2 in t.bytes() {
         if it1.peek() == Some(&c2) {
@@ -289,10 +320,12 @@ where
 /// use puzzletools::word::double_letters;
 /// assert_eq!(double_letters("PUZZLETOOLS"),"ZO");
 /// ```
-pub fn double_letters<S: Text>(s: S) -> String
-{
-    let v = s.as_bytes().windows(2).filter_map(|x|
-        if x[0] == x[1] { Some(x[0]) } else { None }).collect();
+pub fn double_letters<S: Text>(s: S) -> String {
+    let v = s
+        .as_bytes()
+        .windows(2)
+        .filter_map(|x| if x[0] == x[1] { Some(x[0]) } else { None })
+        .collect();
     unsafe { String::from_utf8_unchecked(v) }
 }
 
@@ -303,8 +336,7 @@ pub fn double_letters<S: Text>(s: S) -> String
 /// use puzzletools::word::repeated_bigrams;
 /// assert_eq!(repeated_bigrams("ONGOING"),vec![*b"NG"]);
 /// ```
-pub fn repeated_bigrams<S: Text>(s: S) -> Vec<[u8; 2]>
-{
+pub fn repeated_bigrams<S: Text>(s: S) -> Vec<[u8; 2]> {
     let mut seen = [false; 676];
     let mut repeated = Vec::new();
     for b in s.as_bytes().windows(2) {
@@ -327,41 +359,52 @@ pub fn repeated_bigrams<S: Text>(s: S) -> Vec<[u8; 2]>
 /// assert_eq!(special_letter_block("REFLEXIVE", is_roman_numeral_letter), None);
 /// assert_eq!(special_letter_block("THROUGHOUT", is_roman_numeral_letter), None);
 /// ```
-pub fn special_letter_block<S: Text, F: FnMut(u8) -> bool>(s: S, mut pred: F) -> Option<std::ops::Range<usize>>
-{
+pub fn special_letter_block<S: Text, F: FnMut(u8) -> bool>(
+    s: S,
+    mut pred: F,
+) -> Option<std::ops::Range<usize>> {
     let mut start = None;
     let mut end = None;
     for (n, c) in s.bytes().enumerate() {
         if pred(c) {
             if start.is_none() {
                 start = Some(n);
-            }
-            else if end.is_some() {
+            } else if end.is_some() {
                 return None;
             }
-        }
-        else if start.is_some() && end.is_none() {
+        } else if start.is_some() && end.is_none() {
             end = Some(n);
         }
     }
     if let Some(st) = start {
         let en = end.unwrap_or(s.as_bytes().len());
         Some(st..en)
+    } else {
+        None
     }
-    else { None }
 }
 
-pub struct DeletedLetterItem<S: Text+Copy> {
+pub struct DeletedLetterItem<S: Text + Copy> {
     text: S,
-    pos: usize
+    pos: usize,
 }
 
-impl<S: Text+Copy> DeletedLetterItem<S> {
-    pub fn original_text(&self) -> S { self.text }
-    pub fn position(&self) -> usize { self.pos }
-    pub fn deleted_char(&self) -> char { self.text.char(self.pos) }
+impl<S: Text + Copy> DeletedLetterItem<S> {
+    pub fn original_text(&self) -> S {
+        self.text
+    }
+    pub fn position(&self) -> usize {
+        self.pos
+    }
+    pub fn deleted_char(&self) -> char {
+        self.text.char(self.pos)
+    }
     pub fn text(&self) -> String {
-        format!("{}{}",&self.text.as_str()[..self.pos],&self.text.as_str()[self.pos+1..])
+        format!(
+            "{}{}",
+            &self.text.as_str()[..self.pos],
+            &self.text.as_str()[self.pos + 1..]
+        )
     }
 }
 
@@ -374,13 +417,27 @@ impl<S: Text+Copy> DeletedLetterItem<S> {
 /// let s2: HashSet<_> = w2.iter().map(|s| s.to_string()).collect();
 /// assert_eq!(s1,s2);
 /// ```
-pub fn deleted_letter_iter<S: Text+Copy>(s: S) -> impl Iterator<Item=DeletedLetterItem<S>> {
-    (0..(s.len())).map(move |n| {
-        DeletedLetterItem {
-            text: s,
-            pos: n
-        }
-    })
+pub fn deleted_letter_iter<S: Text + Copy>(s: S) -> impl Iterator<Item = DeletedLetterItem<S>> {
+    (0..(s.len())).map(move |n| DeletedLetterItem { text: s, pos: n })
+}
+
+/// Returns true if `s` can be constructed by intertwining `pat1` and `pat2`
+///
+/// ```
+/// use puzzletools::word::is_intertwine;
+/// assert!(is_intertwine("INTERTWINE","INERT","TWINE"));
+/// assert!(!is_intertwine("INTERTWINE","INERT","TWIN"));
+/// assert!(!is_intertwine("INTERTWINE","INERT","SWINE"));
+/// ```
+pub fn is_intertwine<S: Text, T: Text, U: Text>(s: S, pat1: T, pat2: U) -> bool {
+    s.len() == pat1.len() + pat2.len()
+        && is_intertwine_helper(s.as_bytes(), pat1.as_bytes(), pat2.as_bytes())
+}
+
+fn is_intertwine_helper(s: &[u8], pat1: &[u8], pat2: &[u8]) -> bool {
+    s.is_empty()
+        || (!pat1.is_empty() && s[0] == pat1[0] && is_intertwine_helper(&s[1..], &pat1[1..], pat2))
+        || (!pat2.is_empty() && s[0] == pat2[0] && is_intertwine_helper(&s[1..], pat1, &pat2[1..]))
 }
 
 #[test]

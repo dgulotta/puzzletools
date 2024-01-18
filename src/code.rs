@@ -1,34 +1,42 @@
 //! Codes (Morse, amino acids)
 
-use std::collections::HashMap;
-use crate::word::Text;
 use crate::letter::{lett_to_num_0, Letter};
+use crate::word::Text;
+use std::collections::HashMap;
 
-const BRAILLE_BITS: [u8; 26] = [0x1,0x3,0x9,0x19,0x11,0xb,0x1b,0x13,0xa,0x1a,0x5,0x7,0xd,0x1d,0x15,0xf,0x1f,0x17,0xe,0x1e,0x25,0x27,0x3a,0x2d,0x3d,0x35];
+const BRAILLE_BITS: [u8; 26] = [
+    0x1, 0x3, 0x9, 0x19, 0x11, 0xb, 0x1b, 0x13, 0xa, 0x1a, 0x5, 0x7, 0xd, 0x1d, 0x15, 0xf, 0x1f,
+    0x17, 0xe, 0x1e, 0x25, 0x27, 0x3a, 0x2d, 0x3d, 0x35,
+];
 
 lazy_static! {
-    static ref ALPHA_TO_MORSE: HashMap<char,String> = {
+    static ref ALPHA_TO_MORSE: HashMap<char, String> = {
         let mut r = csv::ReaderBuilder::new()
             .has_headers(false)
             .delimiter(b'\t')
             .quoting(false)
             .from_reader(&include_bytes!("../data/morse.tsv")[..]);
-        r.deserialize::<(char,String)>().map(csv::Result::unwrap).collect()
+        r.deserialize::<(char, String)>()
+            .map(csv::Result::unwrap)
+            .collect()
     };
-
-    static ref MORSE_TO_ALPHA: HashMap<&'static str,char> =
-        ALPHA_TO_MORSE.iter().map(|(&k,v)| (v.as_str(),k)).collect();
-
-    static ref GENETIC_CODE_DNA: HashMap<String,char> = {
+    static ref MORSE_TO_ALPHA: HashMap<&'static str, char> = ALPHA_TO_MORSE
+        .iter()
+        .map(|(&k, v)| (v.as_str(), k))
+        .collect();
+    static ref GENETIC_CODE_DNA: HashMap<String, char> = {
         let mut r = csv::ReaderBuilder::new()
             .has_headers(false)
             .delimiter(b'\t')
             .from_reader(&include_bytes!("../data/genetic_code.tsv")[..]);
-        r.deserialize::<(String,char)>().map(csv::Result::unwrap).collect()
+        r.deserialize::<(String, char)>()
+            .map(csv::Result::unwrap)
+            .collect()
     };
-
-    static ref GENETIC_CODE_RNA: HashMap<String,char> =
-        GENETIC_CODE_DNA.iter().map(|(s,c)| (s.replace("T","U"), *c)).collect();
+    static ref GENETIC_CODE_RNA: HashMap<String, char> = GENETIC_CODE_DNA
+        .iter()
+        .map(|(s, c)| (s.replace('T', "U"), *c))
+        .collect();
 }
 
 // Right now the Morse code functions recognize a non-ascii character
@@ -40,9 +48,9 @@ lazy_static! {
 /// assert_eq!(to_morse('m'), Some("--"));
 /// ```
 pub fn to_morse(c: char) -> Option<&'static str> {
-    ALPHA_TO_MORSE.get(&c.to_ascii_uppercase()).map(
-        String::as_str,
-    )
+    ALPHA_TO_MORSE
+        .get(&c.to_ascii_uppercase())
+        .map(String::as_str)
 }
 
 /// Returns the character with the given Morse code representation, if

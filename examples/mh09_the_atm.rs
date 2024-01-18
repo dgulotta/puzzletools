@@ -1,8 +1,8 @@
 extern crate puzzletools;
 
 use puzzletools::search::print_result;
-use puzzletools::wordlist::load_wordlist_iter;
 use puzzletools::word::is_addition;
+use puzzletools::wordlist::load_wordlist_iter;
 
 fn main() {
     let it = load_wordlist_iter("combined.freq.txt").unwrap();

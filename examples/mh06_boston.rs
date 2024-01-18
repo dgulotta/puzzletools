@@ -1,7 +1,7 @@
 extern crate puzzletools;
 
-use puzzletools::wordlist::load_wordlist_iter;
 use puzzletools::search::print_result;
+use puzzletools::wordlist::load_wordlist_iter;
 
 fn boston_letter(s: &[u8]) -> Option<u8> {
     if s.len() < 5 {
@@ -17,7 +17,7 @@ fn boston_letter(s: &[u8]) -> Option<u8> {
 
 fn main() {
     let it = load_wordlist_iter("combined.freq.txt").unwrap();
-    it.filter(|w| {
-        w.len() == 6 && boston_letter(w.slug().as_bytes()) == Some(b'I')
-    }).take(50).for_each(print_result);
+    it.filter(|w| w.len() == 6 && boston_letter(w.slug().as_bytes()) == Some(b'I'))
+        .take(50)
+        .for_each(print_result);
 }

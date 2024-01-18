@@ -1,7 +1,7 @@
 //! Convenience functions for printing out search results.
 
-use std::collections::BinaryHeap;
 use std::cmp::Ordering;
+use std::collections::BinaryHeap;
 use std::fmt::Display;
 
 /// A word (or set of words), along with how good of puzzle answer(s)
@@ -42,11 +42,10 @@ impl<T: SearchResult> Ord for SearchResultOrd<T> {
 }
 
 struct SortResultIter<T> {
-    heap: BinaryHeap<SearchResultOrd<T>>
+    heap: BinaryHeap<SearchResultOrd<T>>,
 }
 
-impl<T: SearchResult> Iterator for SortResultIter<T>
-{
+impl<T: SearchResult> Iterator for SortResultIter<T> {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
@@ -60,6 +59,6 @@ where
     T::Item: SearchResult,
 {
     SortResultIter {
-        heap: it.map(SearchResultOrd).collect()
+        heap: it.map(SearchResultOrd).collect(),
     }
 }
