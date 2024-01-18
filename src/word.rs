@@ -440,6 +440,47 @@ fn is_intertwine_helper(s: &[u8], pat1: &[u8], pat2: &[u8]) -> bool {
         || (!pat2.is_empty() && s[0] == pat2[0] && is_intertwine_helper(&s[1..], pat1, &pat2[1..]))
 }
 
+/// Returns the number of letters in `s` that are not in `t`, and the number
+/// of letters that are in `t` but not in `s`
+///
+/// ```
+/// use puzzletools::word::anagram_difference;
+/// assert_eq!(anagram_difference("DIFFERENCE","FRIEDFENCE"),(0,0));
+/// assert_eq!(anagram_difference("DIFFERENCE","FIERCEEND"),(1,0));
+/// assert_eq!(anagram_difference("DIFFERENCE","REFINEDFACE"),(0,1));
+/// assert_eq!(anagram_difference("DIFFERENCE","AIRDEFENCE"),(1,1));
+pub fn anagram_difference<S: Text, T: Text>(s: S, t: T) -> (usize, usize) {
+    let alpha_s = alphagram(s);
+    let alpha_t = alphagram(t);
+    let mut si = alpha_s.bytes().peekable();
+    let mut ti = alpha_t.bytes().peekable();
+    let mut uniq_s = 0;
+    let mut uniq_t = 0;
+    while let Some(sc) = si.peek() {
+        if let Some(tc) = ti.peek() {
+            match sc.cmp(tc) {
+                std::cmp::Ordering::Less => {
+                    uniq_s += 1;
+                    si.next();
+                }
+                std::cmp::Ordering::Equal => {
+                    si.next();
+                    ti.next();
+                }
+                std::cmp::Ordering::Greater => {
+                    uniq_t += 1;
+                    ti.next();
+                }
+            }
+        } else {
+            break;
+        }
+    }
+    uniq_s += si.count();
+    uniq_t += ti.count();
+    (uniq_s, uniq_t)
+}
+
 #[test]
 fn alphagram_test() {
     assert_eq!(alphagram("POTATO"), "AOOPTT");
