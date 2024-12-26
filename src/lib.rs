@@ -8,7 +8,7 @@ pub mod word;
 pub mod wordlist;
 
 extern crate csv;
-extern crate dotenv;
+extern crate dotenvy;
 extern crate fnv;
 #[macro_use]
 extern crate lazy_static;
@@ -24,7 +24,7 @@ pub mod error {
         #[error("{0}")]
         Csv(#[from] csv::Error),
         #[error("{0}")]
-        Dotenv(#[from] dotenv::Error),
+        Dotenv(#[from] dotenvy::Error),
         #[error("{0}")]
         Io(#[from] std::io::Error),
     }

@@ -10,8 +10,8 @@ use std::iter::FromIterator;
 use std::path::PathBuf;
 
 pub fn load_wordlist_file(name: &str) -> Result<BufReader<File>> {
-    dotenv::dotenv().ok();
-    let mut path = match dotenv::var("WORDLIST_DIR") {
+    dotenvy::dotenv().ok();
+    let mut path = match dotenvy::var("WORDLIST_DIR") {
         Ok(s) => PathBuf::from(s),
         Err(_) => PathBuf::new(),
     };
