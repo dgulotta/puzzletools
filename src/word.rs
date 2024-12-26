@@ -151,7 +151,7 @@ impl Text for str {
     text_impl_str!();
 }
 
-impl<'a> Text for &'a str {
+impl Text for &str {
     text_impl_str!();
 }
 
@@ -159,15 +159,15 @@ impl Text for String {
     text_impl_str!();
 }
 
-impl<'a> Text for &'a String {
+impl Text for &String {
     text_impl_str!();
 }
 
-impl<'a> Text for Cow<'a, str> {
+impl Text for Cow<'_, str> {
     text_impl_str!();
 }
 
-impl<'a, 'b> Text for &'a Cow<'b, str> {
+impl Text for &Cow<'_, str> {
     text_impl_str!();
 }
 
@@ -175,15 +175,15 @@ impl Text for [u8] {
     text_impl_bytes!();
 }
 
-impl<'a> Text for &'a [u8] {
+impl Text for &[u8] {
     text_impl_bytes!();
 }
 
-impl<'a> Text for Cow<'a, [u8]> {
+impl Text for Cow<'_, [u8]> {
     text_impl_bytes!();
 }
 
-impl<'a, 'b> Text for &'a Cow<'b, [u8]> {
+impl Text for &Cow<'_, [u8]> {
     text_impl_bytes!();
 }
 
@@ -191,7 +191,7 @@ impl Text for Vec<u8> {
     text_impl_bytes!();
 }
 
-impl<'a> Text for &'a Vec<u8> {
+impl Text for &Vec<u8> {
     text_impl_bytes!();
 }
 

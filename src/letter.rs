@@ -17,7 +17,7 @@ impl Letter for u8 {
     }
 }
 
-impl<'a> Letter for &'a u8 {
+impl Letter for &u8 {
     fn byte(self) -> u8 {
         *self
     }
@@ -29,7 +29,7 @@ impl Letter for char {
     }
 }
 
-impl<'a> Letter for &'a char {
+impl Letter for &char {
     fn byte(self) -> u8 {
         *self as u8
     }

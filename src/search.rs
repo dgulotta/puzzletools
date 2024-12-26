@@ -31,7 +31,7 @@ impl<T: SearchResult> Eq for SearchResultOrd<T> {}
 
 impl<T: SearchResult> PartialOrd for SearchResultOrd<T> {
     fn partial_cmp(&self, other: &SearchResultOrd<T>) -> Option<Ordering> {
-        self.0.freq().partial_cmp(&other.0.freq())
+        Some(self.cmp(other))
     }
 }
 

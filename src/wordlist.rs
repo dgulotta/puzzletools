@@ -142,15 +142,15 @@ macro_rules! pair_search_result_impl {
     };
 }
 
-impl<'a, 'b> SearchResult for (&'a WordlistEntry, &'b WordlistEntry) {
+impl SearchResult for (&WordlistEntry, &WordlistEntry) {
     pair_search_result_impl!();
 }
 
-impl<'a> SearchResult for (WordFreq, &'a WordlistEntry) {
+impl SearchResult for (WordFreq, &WordlistEntry) {
     pair_search_result_impl!();
 }
 
-impl<'a, 'b> SearchResult for (&'a WordFreq, &'b WordlistEntry) {
+impl SearchResult for (&WordFreq, &WordlistEntry) {
     pair_search_result_impl!();
 }
 
