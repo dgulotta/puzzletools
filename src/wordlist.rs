@@ -165,7 +165,7 @@ pub struct Wordlist {
     // this is essentially a manually implemented IndexSet,
     // but for some reason was about 30% faster in tests
     lookup: hashbrown::HashTable<usize>,
-    hasher: fnv::FnvBuildHasher,
+    hasher: hashbrown::DefaultHashBuilder,
 }
 
 impl Wordlist {
@@ -222,7 +222,7 @@ impl FromIterator<WordlistEntry> for Wordlist {
         T: IntoIterator<Item = WordlistEntry>,
     {
         let entries: Vec<_> = iter.into_iter().collect();
-        let hasher = fnv::FnvBuildHasher::default();
+        let hasher = hashbrown::DefaultHashBuilder::default();
         let mut lookup = hashbrown::HashTable::with_capacity(entries.len());
         for (n, item) in entries.iter().enumerate() {
             let hash = hasher.hash_one(item.slug.as_bytes());

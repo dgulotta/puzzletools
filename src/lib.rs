@@ -7,16 +7,10 @@ pub mod search;
 pub mod word;
 pub mod wordlist;
 
-extern crate csv;
-extern crate dotenvy;
-extern crate fnv;
 #[macro_use]
 extern crate lazy_static;
-extern crate regex;
-extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate thiserror;
 
 pub mod error {
     #[derive(thiserror::Error, Debug)]
