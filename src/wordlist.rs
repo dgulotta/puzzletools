@@ -5,6 +5,7 @@ use crate::search::SearchResult;
 use crate::word::{slug_len, slugify, Text};
 use std::borrow::Cow;
 use std::fs::File;
+use std::hash::BuildHasher;
 use std::io::{BufReader, Read};
 use std::iter::FromIterator;
 use std::path::PathBuf;
@@ -161,14 +162,19 @@ impl SearchResult for (&WordFreq, &WordlistEntry) {
 /// need to do lookups, it is faster to use `wordlist_iter`.
 pub struct Wordlist {
     entries: Vec<WordlistEntry>,
-    lookup: fnv::FnvHashMap<&'static [u8], u32>,
+    // this is essentially a manually implemented IndexSet,
+    // but for some reason was about 30% faster in tests
+    lookup: hashbrown::HashTable<usize>,
+    hasher: fnv::FnvBuildHasher,
 }
 
 impl Wordlist {
     pub fn get<S: Text>(&self, s: S) -> Option<&WordlistEntry> {
+        let bytes = s.as_bytes();
+        let hash = self.hasher.hash_one(bytes);
         self.lookup
-            .get(s.as_bytes())
-            .map(|&n| &self.entries[n as usize])
+            .find(hash, |&n| self.entries[n].slug.as_bytes() == bytes)
+            .map(|&n| &self.entries[n])
     }
 
     /// Returns the frequency of the given slug, or zero if the slug
@@ -182,9 +188,7 @@ impl Wordlist {
     /// assert_eq!(wl.freq("MISSING"), 0);
     /// ```
     pub fn freq<S: Text>(&self, s: S) -> u64 {
-        self.lookup
-            .get(s.as_bytes())
-            .map_or(0, |&n| self.entries[n as usize].freq)
+        self.get(s).map_or(0, |e| e.freq)
     }
 
     pub fn load_from_reader<R: Read>(r: R) -> Result<Self> {
@@ -217,18 +221,17 @@ impl FromIterator<WordlistEntry> for Wordlist {
     where
         T: IntoIterator<Item = WordlistEntry>,
     {
-        let ent: Vec<_> = iter.into_iter().collect();
-        let lookup = ent
-            .iter()
-            .enumerate()
-            .map(|(n, wf)| {
-                let uent = unsafe { crate::util::prolong(wf.slug.as_ref()) };
-                (uent, n as u32)
-            })
-            .collect();
+        let entries: Vec<_> = iter.into_iter().collect();
+        let hasher = fnv::FnvBuildHasher::default();
+        let mut lookup = hashbrown::HashTable::with_capacity(entries.len());
+        for (n, item) in entries.iter().enumerate() {
+            let hash = hasher.hash_one(item.slug.as_bytes());
+            lookup.insert_unique(hash, n, |&n| hasher.hash_one(&entries[n].slug.as_bytes()));
+        }
         Wordlist {
-            entries: ent,
+            entries,
             lookup,
+            hasher,
         }
     }
 }

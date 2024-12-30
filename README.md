@@ -84,6 +84,11 @@ To build the documentation, run
 cargo doc --no-deps
 ```
 
+## Warning
+Puzzletools is meant for solving puzzles quickly, not for production
+code.  In particular, calling Puzzletools functions with non-ASCII text
+may result in a panic or undefined behavior.
+
 ## License
 Dual licensed under the [MIT License](LICENSE-MIT) and the
 [Apache License, Version 2.0](LICENSE-APACHE).

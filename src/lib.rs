@@ -30,10 +30,3 @@ pub mod error {
     }
     pub type Result<T> = ::std::result::Result<T, Error>;
 }
-
-mod util {
-
-    pub unsafe fn prolong<'b, T: ?Sized>(r: &T) -> &'b T {
-        &*(r as *const T)
-    }
-}

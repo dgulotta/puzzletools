@@ -326,6 +326,8 @@ pub fn double_letters<S: Text>(s: S) -> String {
         .windows(2)
         .filter_map(|x| if x[0] == x[1] { Some(x[0]) } else { None })
         .collect();
+    // mh02_orange is about 10% faster with from_utf8_unchecked
+    // than with from_utf8 + unwrap
     unsafe { String::from_utf8_unchecked(v) }
 }
 
