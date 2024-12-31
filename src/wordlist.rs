@@ -226,7 +226,7 @@ impl FromIterator<WordlistEntry> for Wordlist {
         let mut lookup = hashbrown::HashTable::with_capacity(entries.len());
         for (n, item) in entries.iter().enumerate() {
             let hash = hasher.hash_one(item.slug.as_bytes());
-            lookup.insert_unique(hash, n, |&n| hasher.hash_one(&entries[n].slug.as_bytes()));
+            lookup.insert_unique(hash, n, |&n| hasher.hash_one(entries[n].slug.as_bytes()));
         }
         Wordlist {
             entries,

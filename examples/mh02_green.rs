@@ -6,10 +6,7 @@ use puzzletools::word::{special_letter_block, Text};
 use puzzletools::wordlist::load_wordlist_iter;
 
 fn is_xvi(c: u8) -> bool {
-    match c {
-        b'X' | b'V' | b'I' => true,
-        _ => false,
-    }
+    matches!(c, b'X' | b'V' | b'I')
 }
 
 fn main() {

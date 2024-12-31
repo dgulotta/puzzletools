@@ -17,7 +17,7 @@ fn binary<S: Text>(v: S) -> Option<u8> {
             _ => {}
         };
     }
-    if ans >= 1 && ans <= 26 {
+    if (1..=26).contains(&ans) {
         Some((ans as u8) + b'@')
     } else {
         None

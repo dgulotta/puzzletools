@@ -7,7 +7,7 @@ use puzzletools::wordlist::load_wordlist_iter;
 fn ws(letts: &[u8], pos: &[usize], word: &[u8]) -> bool {
     let mut s: Vec<_> = pos.iter().map(|p| word[*p]).collect();
     s.sort_unstable();
-    &s == &letts
+    s == letts
 }
 
 fn main() {
