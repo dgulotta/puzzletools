@@ -9,6 +9,7 @@ lazy_static! {
 }
 
 /// A trait for types that could be interpreted as an ASCII string.
+///
 /// Common types that implement `AsRef<str>` or `AsRef<[u8]>` should
 /// also implement this.  Functions in the `puzzletools` crate use
 /// this trait in order to accept any kind of text.
@@ -212,7 +213,7 @@ pub fn slugify<S: Text + ?Sized>(s: &S) -> Cow<str> {
 /// assert_eq!(slug_len("ASCII STRING"),11);
 /// ```
 pub fn slug_len<S: Text>(s: S) -> usize {
-    s.bytes().filter(|c| c.is_ascii_alphabetic()).count()
+    s.bytes().filter(u8::is_ascii_alphabetic).count()
 }
 
 /// Returns the letters of the word in sorted order, so that two words
@@ -229,8 +230,10 @@ pub fn alphagram<S: Text>(s: S) -> String {
 }
 
 /// Applies a subsitution cipher so that the first letter of the word becomes A,
-/// the second unique letter becomes B, etc.  Two words have the same ciphergram
-/// if and only they can be obtained from each other via a substitution cipher.
+/// the second unique letter becomes B, etc.
+///
+/// Two words have the same ciphergram if and only they can be obtained from
+/// each other via a substitution cipher.
 /// ```
 /// use puzzletools::word::ciphergram;
 /// assert_eq!(ciphergram("POTATO"),ciphergram("UNEVEN"));
@@ -378,12 +381,10 @@ pub fn special_letter_block<S: Text, F: FnMut(u8) -> bool>(
             end = Some(n);
         }
     }
-    if let Some(st) = start {
-        let en = end.unwrap_or(s.as_bytes().len());
-        Some(st..en)
-    } else {
-        None
-    }
+    start.map(|st| {
+        let en = end.unwrap_or_else(|| s.as_bytes().len());
+        st..en
+    })
 }
 
 pub struct DeletedLetterItem<S: Text + Copy> {

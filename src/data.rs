@@ -63,7 +63,7 @@ lazy_static! {
 pub fn parse_as_element_symbols(s: &str) -> (u64, Option<Vec<&'static ChemicalElement>>) {
     let mut partial: Vec<(u64, usize)> = Vec::with_capacity(s.len() + 1);
     partial.push((1, 0));
-    for idx in 1..(s.len() + 1) {
+    for idx in 1..=s.len() {
         let mut n = 0;
         let mut off = 0;
         for sz in (1..3).rev() {

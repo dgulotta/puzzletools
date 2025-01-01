@@ -13,6 +13,7 @@ extern crate lazy_static;
 extern crate serde_derive;
 
 pub mod error {
+    #[non_exhaustive]
     #[derive(thiserror::Error, Debug)]
     pub enum Error {
         #[error("{0}")]

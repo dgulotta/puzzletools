@@ -1,5 +1,5 @@
 //! Utilities for searching or iterating through a word list.
-
+#![allow(clippy::len_without_is_empty)]
 use crate::error::Result;
 use crate::search::SearchResult;
 use crate::word::{slug_len, slugify, Text};
@@ -12,10 +12,7 @@ use std::path::PathBuf;
 
 pub fn load_wordlist_file(name: &str) -> Result<BufReader<File>> {
     dotenvy::dotenv().ok();
-    let mut path = match dotenvy::var("WORDLIST_DIR") {
-        Ok(s) => PathBuf::from(s),
-        Err(_) => PathBuf::new(),
-    };
+    let mut path = dotenvy::var("WORDLIST_DIR").map_or_else(|_| PathBuf::new(), PathBuf::from);
     path.push(name);
     Ok(BufReader::new(File::open(path)?))
 }
@@ -104,7 +101,7 @@ impl<'a> SearchResult for &'a WordFreq {
 impl From<WordFreq> for WordlistEntry {
     fn from(wf: WordFreq) -> Self {
         let slug = slugify(&wf.word).to_string();
-        WordlistEntry {
+        Self {
             word: wf.word,
             slug,
             freq: wf.freq,
@@ -228,7 +225,7 @@ impl FromIterator<WordlistEntry> for Wordlist {
             let hash = hasher.hash_one(item.slug.as_bytes());
             lookup.insert_unique(hash, n, |&n| hasher.hash_one(entries[n].slug.as_bytes()));
         }
-        Wordlist {
+        Self {
             entries,
             lookup,
             hasher,
@@ -306,13 +303,9 @@ where
     F: FnMut(&I::Item) -> Option<W>,
     W: Text,
 {
-    list1.into_iter().filter_map(move |w1| {
-        if let Some(e) = trans(&w1) {
-            list2.get(e.as_bytes()).map(|w2| (w1, w2))
-        } else {
-            None
-        }
-    })
+    list1
+        .into_iter()
+        .filter_map(move |w1| trans(&w1).and_then(|e| list2.get(e.as_bytes()).map(|w2| (w1, w2))))
 }
 
 /// Returns pairs of words satisfying certain properties.

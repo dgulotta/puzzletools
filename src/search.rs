@@ -22,7 +22,7 @@ pub fn print_result<S: SearchResult>(s: S) {
 struct SearchResultOrd<T>(T);
 
 impl<T: SearchResult> PartialEq for SearchResultOrd<T> {
-    fn eq(&self, other: &SearchResultOrd<T>) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         self.0.freq().eq(&other.0.freq())
     }
 }
@@ -30,13 +30,13 @@ impl<T: SearchResult> PartialEq for SearchResultOrd<T> {
 impl<T: SearchResult> Eq for SearchResultOrd<T> {}
 
 impl<T: SearchResult> PartialOrd for SearchResultOrd<T> {
-    fn partial_cmp(&self, other: &SearchResultOrd<T>) -> Option<Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
 impl<T: SearchResult> Ord for SearchResultOrd<T> {
-    fn cmp(&self, other: &SearchResultOrd<T>) -> Ordering {
+    fn cmp(&self, other: &Self) -> Ordering {
         self.0.freq().cmp(&other.0.freq())
     }
 }
