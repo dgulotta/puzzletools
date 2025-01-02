@@ -41,8 +41,8 @@ impl Letter for &char {
 /// use puzzletools::letter::lett_to_num_0;
 /// assert_eq!(lett_to_num_0(b'E'),4);
 /// ```
-pub const fn lett_to_num_0(c: u8) -> usize {
-    (c - b'A') as usize
+pub fn lett_to_num_0(c: impl Letter) -> usize {
+    (c.byte() - b'A') as usize
 }
 
 pub fn is_dna_letter<L: Letter>(c: L) -> bool {
