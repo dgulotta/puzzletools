@@ -47,11 +47,11 @@ pub trait Text {
         self.as_str().as_ref()
     }
     /// Returns an iterator over the letters of this text, considered as bytes.
-    fn bytes(&self) -> std::str::Bytes {
+    fn bytes(&self) -> std::str::Bytes<'_> {
         self.as_str().bytes()
     }
     /// Returns an iterator over the letters of this text, considered as characters.
-    fn chars(&self) -> std::str::Chars {
+    fn chars(&self) -> std::str::Chars<'_> {
         self.as_str().chars()
     }
     /// Returns the byte at the index `idx`.
@@ -203,7 +203,7 @@ impl Text for &Vec<u8> {
 /// assert_eq!(slugify("ONE 2 THREE"),"ONETHREE");
 ///
 /// ```
-pub fn slugify<S: Text + ?Sized>(s: &S) -> Cow<str> {
+pub fn slugify<S: Text + ?Sized>(s: &S) -> Cow<'_, str> {
     SLUG_RE.replace_all(s.as_str(), "")
 }
 

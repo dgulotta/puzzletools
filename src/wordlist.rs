@@ -62,7 +62,7 @@ impl WordFreq {
     /// let wf = WordFreq { word: "ASCII STRING".to_owned(), freq: 1 };
     /// assert_eq!(wf.slug(),"ASCIISTRING");
     /// ```
-    pub fn slug(&self) -> Cow<str> {
+    pub fn slug(&self) -> Cow<'_, str> {
         slugify(&self.word)
     }
     /// The number of letters in the word (non-alphabetic characters are not counted).
@@ -199,7 +199,7 @@ impl Wordlist {
         Self::load_from_reader(r)
     }
 
-    pub fn iter(&self) -> ::std::slice::Iter<WordlistEntry> {
+    pub fn iter(&self) -> ::std::slice::Iter<'_, WordlistEntry> {
         self.into_iter()
     }
 }
